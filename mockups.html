@@ -1,0 +1,406 @@
+<title>20 Modelos — Crachá Masterclass de IA (Ímpar)</title>
+<style>
+  :root {
+    --page-bg: #f4f1f4;
+    --page-text: #2b1130;
+    --page-muted: #6b5a6a;
+    --tile-bg: #ffffff;
+    --tile-border: #e3dbe2;
+  }
+  :root[data-theme="dark"] {
+    --page-bg: #16101a;
+    --page-text: #f1e9ef;
+    --page-muted: #b8a6b6;
+    --tile-bg: #1f1621;
+    --tile-border: #3a2a3a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --page-bg: #16101a;
+      --page-text: #f1e9ef;
+      --page-muted: #b8a6b6;
+      --tile-bg: #1f1621;
+      --tile-border: #3a2a3a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page-bg);
+    color: var(--page-text);
+    font-family: "Segoe UI", Arial, sans-serif;
+  }
+  .wrap { max-width: 1400px; margin: 0 auto; padding: 36px 20px 80px; }
+  header { text-align: center; margin-bottom: 28px; }
+  header h1 { font-family: Georgia, "Times New Roman", serif; font-size: 26px; margin: 0 0 8px; }
+  header p { color: var(--page-muted); margin: 0 auto; max-width: 600px; font-size: 14px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 18px;
+  }
+  .tile { background: var(--tile-bg); border: 1px solid var(--tile-border); border-radius: 12px; padding: 10px; }
+  .canvas-frame { width: 100%; aspect-ratio: 1/1; border-radius: 8px; overflow: hidden; }
+  .canvas-frame canvas { width: 100%; height: 100%; display: block; }
+  .tile .tag { font-size: 11.5px; color: var(--page-muted); text-align: center; margin-top: 8px; line-height: 1.4; }
+  .tile .num { font-weight: 700; color: var(--page-text); }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>20 modelos rápidos para escolher a direção</h1>
+    <p>Variações de formato, fundo, cores e detalhes (cordão, código de barras, QR). Nome e foto são só placeholder pra comparar a composição.</p>
+  </header>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var P = { purple: "#801C73", purpleDark: "#5F1555", orange: "#F07134" };
+  var SANS = '"Segoe UI", Arial, sans-serif';
+  var SERIF = 'Georgia, "Times New Roman", serif';
+  var NAME = "Icaro Vieira";
+  var INITIAL = "I";
+  var MODULES = ["CLAUDE CODE", "SPEC DRIVEN DEV", "COPILOT STUDIO", "POWER BI"];
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+  function roundRectTop(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x, y + h);
+    ctx.lineTo(x, y + r);
+    ctx.arcTo(x, y, x + r, y, r);
+    ctx.lineTo(x + w - r, y);
+    ctx.arcTo(x + w, y, x + w, y + r, r);
+    ctx.lineTo(x + w, y + h);
+    ctx.closePath();
+  }
+  function trackedWidth(ctx, text, sp) {
+    var w = 0;
+    for (var i = 0; i < text.length; i++) { w += ctx.measureText(text[i]).width; if (i < text.length - 1) w += sp; }
+    return w;
+  }
+  function trackedText(ctx, text, cx, y, sp) {
+    var total = trackedWidth(ctx, text, sp);
+    var x = cx - total / 2;
+    var prev = ctx.textAlign;
+    ctx.textAlign = "left";
+    for (var i = 0; i < text.length; i++) { ctx.fillText(text[i], x, y); x += ctx.measureText(text[i]).width + sp; }
+    ctx.textAlign = prev;
+  }
+  function wrapLines(ctx, text, maxWidth) {
+    var words = text.split(" "), lines = [], cur = "";
+    for (var i = 0; i < words.length; i++) {
+      var t = cur ? cur + " " + words[i] : words[i];
+      if (ctx.measureText(t).width > maxWidth && cur) { lines.push(cur); cur = words[i]; } else cur = t;
+    }
+    if (cur) lines.push(cur);
+    return lines;
+  }
+  function barcode(ctx, x, y, w, h, color) {
+    ctx.save(); ctx.fillStyle = color;
+    var cx = x, seed = 7;
+    while (cx < x + w) {
+      seed = (seed * 13 + 5) % 11;
+      var bw = 2 + (seed % 4);
+      if (seed % 3 !== 0) ctx.fillRect(cx, y, bw, h);
+      cx += bw + 3;
+    }
+    ctx.restore();
+  }
+  function qrPattern(ctx, x, y, size, color) {
+    ctx.save(); ctx.fillStyle = color;
+    var cells = 7, cell = size / cells, seed = 3;
+    for (var r = 0; r < cells; r++) {
+      for (var c = 0; c < cells; c++) {
+        seed = (seed * 17 + 11) % 13;
+        var corner = (r < 2 && c < 2) || (r < 2 && c > cells - 3) || (r > cells - 3 && c < 2);
+        if (corner || seed % 2 === 0) ctx.fillRect(x + c * cell, y + r * cell, cell - 1.5, cell - 1.5);
+      }
+    }
+    ctx.restore();
+  }
+  function photoPlaceholder(ctx, shape, cx, cy, size) {
+    ctx.save();
+    if (shape === "circle") { ctx.beginPath(); ctx.arc(cx, cy, size / 2, 0, Math.PI * 2); ctx.clip(); }
+    else { var rr = shape === "square" ? 6 : size * 0.16; roundRect(ctx, cx - size / 2, cy - size / 2, size, size, rr); ctx.clip(); }
+    var g = ctx.createLinearGradient(cx - size / 2, cy - size / 2, cx + size / 2, cy + size / 2);
+    g.addColorStop(0, P.purpleDark); g.addColorStop(1, P.purple);
+    ctx.fillStyle = g; ctx.fillRect(cx - size / 2, cy - size / 2, size, size);
+    ctx.fillStyle = "rgba(255,255,255,0.88)";
+    ctx.font = "700 " + Math.round(size * 0.44) + "px " + SERIF;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(INITIAL, cx, cy + size * 0.03);
+    ctx.restore();
+  }
+
+  function drawBG(ctx, bg) {
+    var W = 1080, H = 1080;
+    if (bg.mode === "solid") { ctx.fillStyle = bg.c1; ctx.fillRect(0, 0, W, H); }
+    else if (bg.mode === "gradient") {
+      var g = ctx.createLinearGradient(0, 0, W, H);
+      g.addColorStop(0, bg.c1); g.addColorStop(1, bg.c2);
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    } else if (bg.mode === "radial") {
+      ctx.fillStyle = bg.c2; ctx.fillRect(0, 0, W, H);
+      var rg = ctx.createRadialGradient(W / 2, H * 0.35, 0, W / 2, H * 0.35, W * 0.75);
+      rg.addColorStop(0, bg.c1); rg.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
+    } else if (bg.mode === "split") {
+      ctx.fillStyle = bg.c1; ctx.fillRect(0, 0, W, H);
+      ctx.save();
+      ctx.beginPath(); ctx.moveTo(0, H); ctx.lineTo(W, H * 0.45); ctx.lineTo(W, H); ctx.closePath();
+      ctx.fillStyle = bg.c2; ctx.fill(); ctx.restore();
+    } else { ctx.fillStyle = bg.c1; ctx.fillRect(0, 0, W, H); }
+  }
+
+  function drawHeadline(ctx, cfg) {
+    var CX = 540;
+    if (cfg.headline.type === "none") return;
+    ctx.save();
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    var BODY = cfg.fonts.body, DISPLAY = cfg.fonts.display;
+    if (cfg.headline.type === "bold") {
+      ctx.font = "700 15px " + BODY; ctx.fillStyle = cfg.headline.c2;
+      trackedText(ctx, "SUA CREDENCIAL", CX, 70, 3);
+      ctx.font = (cfg.headline.weight || "800") + " 54px " + DISPLAY; ctx.fillStyle = cfg.headline.c1;
+      ctx.fillText("MASTERCLASS DE IA", CX, 124);
+      ctx.font = "600 16px " + BODY; ctx.fillStyle = cfg.headline.c2;
+      trackedText(ctx, "21 · 10 · 2026", CX, 164, 2);
+    } else if (cfg.headline.type === "serif") {
+      ctx.font = "700 14px " + BODY; ctx.fillStyle = cfg.headline.c2;
+      trackedText(ctx, "CARTÃO DE PARTICIPAÇÃO", CX, 76, 3);
+      ctx.font = (cfg.headline.style || "italic 400") + " 42px " + DISPLAY; ctx.fillStyle = cfg.headline.c1;
+      ctx.fillText("Primeira Masterclass de IA", CX, 128);
+    } else if (cfg.headline.type === "label") {
+      ctx.font = "700 15px " + BODY; ctx.fillStyle = cfg.headline.c1;
+      trackedText(ctx, "ÍMPAR · MASTERCLASS DE IA · 21.10.2026", CX, 70, 2);
+    }
+    ctx.restore();
+  }
+
+  function drawFooter(ctx, cfg) {
+    if (cfg.footer.type === "none") return;
+    var CX = 540, y = 1032;
+    ctx.save(); ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    if (cfg.footer.type === "inline") {
+      ctx.font = "600 15px " + cfg.fonts.body; ctx.fillStyle = cfg.footer.color;
+      trackedText(ctx, MODULES.join("   ·   "), CX, y, 1);
+    } else if (cfg.footer.type === "pills") {
+      var x = 90, gap = 10, h = 34;
+      MODULES.forEach(function (m) {
+        ctx.font = "700 13px " + cfg.fonts.body;
+        var w = ctx.measureText(m).width + 28;
+        roundRect(ctx, x, y - h / 2, w, h, h / 2);
+        ctx.fillStyle = cfg.footer.pill; ctx.fill();
+        ctx.fillStyle = cfg.footer.color;
+        ctx.fillText(m, x + w / 2, y + 1);
+        x += w + gap;
+      });
+    }
+    ctx.restore();
+  }
+
+  function shapeDims(shape, scale) {
+    if (shape === "horizontal") return { w: 760 * scale, h: 440 * scale, kind: shape };
+    if (shape === "square") return { w: 520 * scale, h: 520 * scale, kind: shape };
+    return { w: 420 * scale, h: 560 * scale, kind: "badge" };
+  }
+
+  function drawLanyardLocal(ctx, dims, color) {
+    var topEdge = -dims.h / 2;
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(-42, topEdge - 80);
+    ctx.lineTo(42, topEdge - 80);
+    ctx.lineTo(28, topEdge - 14);
+    ctx.lineTo(-28, topEdge - 14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, topEdge - 10, 11, 0, Math.PI * 2);
+    ctx.lineWidth = 5; ctx.strokeStyle = "rgba(255,255,255,0.92)"; ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawCardLocal(ctx, dims, cfg) {
+    var w = dims.w, h = dims.h, x0 = -w / 2, y0 = -h / 2;
+
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,0.28)"; ctx.shadowBlur = 42; ctx.shadowOffsetY = 20;
+    roundRect(ctx, x0, y0, w, h, 30);
+    ctx.fillStyle = cfg.cardFill; ctx.fill();
+    ctx.restore();
+
+    var stripeH = 0;
+    if (cfg.stripeHeader) {
+      stripeH = h * 0.16;
+      ctx.save();
+      roundRectTop(ctx, x0, y0, w, stripeH, 30);
+      ctx.fillStyle = cfg.accent; ctx.fill();
+      ctx.font = "800 " + Math.round(w * 0.065) + "px " + cfg.fonts.body;
+      ctx.fillStyle = "#ffffff"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      trackedText(ctx, "ÍMPAR", 0, y0 + stripeH * 0.52, 2);
+      ctx.restore();
+    }
+
+    if (cfg.lanyard) {
+      ctx.save();
+      ctx.beginPath(); ctx.arc(0, y0 + 24, 12, 0, Math.PI * 2);
+      ctx.fillStyle = cfg.cardFill;
+      ctx.globalCompositeOperation = "destination-out"; ctx.fill();
+      ctx.restore();
+    }
+
+    ctx.save();
+    roundRect(ctx, x0, y0, w, h, 30);
+    ctx.lineWidth = 1.5; ctx.strokeStyle = "rgba(95,21,85,0.14)"; ctx.stroke();
+    ctx.restore();
+
+    if (dims.kind === "horizontal") {
+      var photoSize = h * 0.56;
+      var photoCx = x0 + w * 0.26, photoCy = 0;
+      photoPlaceholder(ctx, cfg.photoShape, photoCx, photoCy, photoSize);
+      var textX = x0 + w * 0.48;
+      ctx.save();
+      ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      ctx.font = "700 " + Math.round(h * 0.09) + "px " + cfg.fonts.display; ctx.fillStyle = cfg.ink;
+      ctx.fillText(NAME, textX, photoCy - h * 0.1);
+      ctx.font = "700 " + Math.round(h * 0.032) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
+      ctx.textAlign = "left";
+      trackedText2(ctx, "PARTICIPANTE", textX, photoCy - h * 0.02, 2);
+      ctx.font = "600 " + Math.round(h * 0.036) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.ink;
+      wrapLines(ctx, "Masterclass de Inteligência Artificial", w * 0.42).forEach(function (line, i) {
+        ctx.fillText(line, textX, photoCy + h * 0.08 + i * h * 0.05);
+      });
+      ctx.font = "700 " + Math.round(h * 0.034) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
+      ctx.fillText("21 · 10 · 2026", textX, photoCy + h * 0.22);
+      ctx.restore();
+
+      if (cfg.deco === "barcode") barcode(ctx, x0 + w * 0.04, y0 + h - h * 0.1, w * 0.92, h * 0.045, cfg.muted);
+      if (cfg.deco === "qr") qrPattern(ctx, x0 + w - w * 0.16, y0 + h - h * 0.2, h * 0.16, cfg.muted);
+    } else {
+      var topPad = stripeH + h * 0.1;
+      var pR = w * 0.26;
+      var pCy = y0 + topPad + pR;
+      photoPlaceholder(ctx, cfg.photoShape, 0, pCy, pR * 2);
+
+      var nameY = pCy + pR + h * 0.1;
+      ctx.save();
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.font = "700 " + Math.round(w * 0.082) + "px " + cfg.fonts.display; ctx.fillStyle = cfg.ink;
+      ctx.fillText(NAME, 0, nameY);
+      ctx.font = "700 " + Math.round(w * 0.032) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
+      trackedText(ctx, "PARTICIPANTE", 0, nameY + h * 0.07, 3);
+
+      ctx.strokeStyle = "rgba(95,21,85,0.14)"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x0 + w * 0.12, nameY + h * 0.12); ctx.lineTo(x0 + w - w * 0.12, nameY + h * 0.12); ctx.stroke();
+
+      ctx.font = "600 " + Math.round(w * 0.04) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.ink;
+      wrapLines(ctx, "MASTERCLASS DE INTELIGÊNCIA ARTIFICIAL", w - w * 0.24).forEach(function (line, i) {
+        ctx.fillText(line, 0, nameY + h * 0.2 + i * h * 0.045);
+      });
+      ctx.font = "700 " + Math.round(w * 0.038) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
+      trackedText(ctx, "21 · 10 · 2026", 0, nameY + h * 0.32, 2);
+      ctx.restore();
+
+      if (cfg.deco === "barcode") barcode(ctx, x0 + w * 0.1, y0 + h - h * 0.08, w * 0.8, h * 0.035, cfg.muted);
+      if (cfg.deco === "qr") qrPattern(ctx, 0 - h * 0.08, y0 + h - h * 0.16, h * 0.13, cfg.muted);
+    }
+  }
+
+  function trackedText2(ctx, text, x, y, sp) {
+    var cur = x;
+    for (var i = 0; i < text.length; i++) { ctx.fillText(text[i], cur, y); cur += ctx.measureText(text[i]).width + sp; }
+  }
+
+  function renderVariant(ctx, cfg) {
+    ctx.clearRect(0, 0, 1080, 1080);
+    drawBG(ctx, cfg.bg);
+    drawHeadline(ctx, cfg);
+    var dims = shapeDims(cfg.shape, cfg.scale);
+    ctx.save();
+    ctx.translate(540, 560);
+    if (cfg.tilt) ctx.rotate((cfg.tilt * Math.PI) / 180);
+    if (cfg.lanyard) drawLanyardLocal(ctx, dims, cfg.accent);
+    drawCardLocal(ctx, dims, cfg);
+    ctx.restore();
+    drawFooter(ctx, cfg);
+  }
+
+  // ---------- 20 configs ----------
+
+  var white = "#ffffff", cream = "#FBF4EC", neutral = "#EDEAEC";
+  var muted = "#c9bcc6";
+
+  var CONFIGS = [
+    { note: "Crachá, fundo roxo, laranja", bg: { mode: "solid", c1: P.purpleDark }, shape: "badge", scale: 1, tilt: 0, accent: P.orange, cardFill: white, ink: P.purpleDark, photoShape: "rounded", stripeHeader: true, lanyard: true, deco: "barcode", muted: muted, headline: { type: "bold", c1: "#fff", c2: P.orange }, footer: { type: "inline", color: "#fff" } },
+    { note: "Crachá, fundo laranja, roxo", bg: { mode: "solid", c1: P.orange }, shape: "badge", scale: 1, tilt: -4, accent: P.purpleDark, cardFill: white, ink: P.purpleDark, photoShape: "circle", stripeHeader: true, lanyard: true, deco: "barcode", muted: muted, headline: { type: "bold", c1: "#fff", c2: P.purpleDark }, footer: { type: "inline", color: "#fff" } },
+    { note: "Crachá, fundo neutro, QR", bg: { mode: "solid", c1: neutral }, shape: "badge", scale: 1, tilt: 0, accent: P.purpleDark, cardFill: white, ink: P.purpleDark, photoShape: "rounded", stripeHeader: true, lanyard: false, deco: "qr", muted: muted, headline: { type: "label", c1: P.purpleDark }, footer: { type: "inline", color: P.purpleDark } },
+    { note: "Crachá, gradiente roxo", bg: { mode: "gradient", c1: P.purple, c2: P.purpleDark }, shape: "badge", scale: 1.05, tilt: 4, accent: P.orange, cardFill: white, ink: P.purpleDark, photoShape: "circle", stripeHeader: false, lanyard: true, deco: "barcode", muted: muted, headline: { type: "none" }, footer: { type: "pills", color: "#fff", pill: "rgba(255,255,255,0.18)" } },
+    { note: "Crachá, split laranja/roxo", bg: { mode: "split", c1: P.purpleDark, c2: P.orange }, shape: "badge", scale: 1, tilt: 0, accent: P.purpleDark, cardFill: white, ink: P.purpleDark, photoShape: "square", stripeHeader: true, lanyard: true, deco: "qr", muted: muted, headline: { type: "bold", c1: "#fff", c2: P.orange }, footer: { type: "inline", color: "#fff" } },
+    { note: "Crachá, fundo creme, QR", bg: { mode: "solid", c1: cream }, shape: "badge", scale: 1, tilt: -3, accent: P.purple, cardFill: white, ink: P.purpleDark, photoShape: "rounded", stripeHeader: true, lanyard: false, deco: "qr", muted: muted, headline: { type: "serif", c1: P.purpleDark, c2: P.orange }, footer: { type: "inline", color: P.purpleDark } },
+    { note: "Cartão horizontal, roxo", bg: { mode: "solid", c1: P.purpleDark }, shape: "horizontal", scale: 1, tilt: -3, accent: P.orange, cardFill: white, ink: P.purpleDark, photoShape: "rounded", stripeHeader: true, lanyard: false, deco: "barcode", muted: muted, headline: { type: "bold", c1: "#fff", c2: P.orange }, footer: { type: "inline", color: "#fff" } },
+    { note: "Cartão horizontal, laranja", bg: { mode: "solid", c1: P.orange }, shape: "horizontal", scale: 1, tilt: 3, accent: P.purpleDark, cardFill: white, ink: P.purpleDark, photoShape: "circle", stripeHeader: false, lanyard: false, deco: "barcode", muted: muted, headline: { type: "label", c1: "#fff" }, footer: { type: "inline", color: "#fff" } },
+    { note: "Cartão horizontal, neutro", bg: { mode: "solid", c1: neutral }, shape: "horizontal", scale: 1, tilt: 0, accent: P.purpleDark, cardFill: white, ink: P.purpleDark, photoShape: "square", stripeHeader: true, lanyard: false, deco: "qr", muted: muted, headline: { type: "serif", c1: P.purpleDark, c2: P.orange }, footer: { type: "pills", color: "#fff", pill: P.purpleDark } },
+    { note: "Cartão horizontal, creme", bg: { mode: "solid", c1: cream }, shape: "horizontal", scale: 1.05, tilt: -2, accent: P.orange, cardFill: white, ink: P.purpleDark, photoShape: "rounded", stripeHeader: false, lanyard: false, deco: "barcode", muted: muted, headline: { type: "none" }, footer: { type: "inline", color: P.purpleDark } },
+    { note: "Cartão horizontal, gradiente", bg: { mode: "gradient", c1: P.orange, c2: P.purpleDark }, shape: "horizontal", scale: 1, tilt: 0, accent: P.purpleDark, cardFill: white, ink: P.purpleDark, photoShape: "circle", stripeHeader: true, lanyard: false, deco: "barcode", muted: muted, headline: { type: "bold", c1: "#fff", c2: "#fff" }, footer: { type: "inline", color: "#fff" } },
+    { note: "Quadrado, roxo radial", bg: { mode: "radial", c1: P.purple, c2: P.purpleDark }, shape: "square", scale: 1, tilt: 0, accent: P.orange, cardFill: white, ink: P.purpleDark, photoShape: "circle", stripeHeader: false, lanyard: false, deco: "barcode", muted: muted, headline: { type: "bold", c1: "#fff", c2: P.orange }, footer: { type: "inline", color: "#fff" } },
+    { note: "Quadrado, laranja radial", bg: { mode: "radial", c1: P.orange, c2: P.purpleDark }, shape: "square", scale: 1, tilt: 3, accent: P.purpleDark, cardFill: white, ink: P.purpleDark, photoShape: "rounded", stripeHeader: true, lanyard: false, deco: "qr", muted: muted, headline: { type: "label", c1: "#fff" }, footer: { type: "inline", color: "#fff" } },
+    { note: "Quadrado, neutro minimal", bg: { mode: "solid", c1: neutral }, shape: "square", scale: 0.95, tilt: 0, accent: P.purpleDark, cardFill: white, ink: P.purpleDark, photoShape: "circle", stripeHeader: false, lanyard: false, deco: "none", muted: muted, headline: { type: "serif", c1: P.purpleDark, c2: P.orange }, footer: { type: "inline", color: P.purpleDark } },
+    { note: "Quadrado, creme + QR", bg: { mode: "solid", c1: cream }, shape: "square", scale: 1, tilt: -4, accent: P.orange, cardFill: white, ink: P.purpleDark, photoShape: "square", stripeHeader: true, lanyard: false, deco: "qr", muted: muted, headline: { type: "none" }, footer: { type: "pills", color: P.purpleDark, pill: "rgba(128,28,115,0.12)" } },
+    { note: "Quadrado, split", bg: { mode: "split", c1: P.orange, c2: P.purpleDark }, shape: "square", scale: 1, tilt: 4, accent: P.purpleDark, cardFill: white, ink: P.purpleDark, photoShape: "rounded", stripeHeader: false, lanyard: false, deco: "barcode", muted: muted, headline: { type: "bold", c1: "#fff", c2: "#fff" }, footer: { type: "inline", color: "#fff" } },
+    { note: "Crachá branco puro, sem cordão", bg: { mode: "solid", c1: white }, shape: "badge", scale: 1, tilt: 0, accent: P.orange, cardFill: cream, ink: P.purpleDark, photoShape: "circle", stripeHeader: true, lanyard: false, deco: "barcode", muted: muted, headline: { type: "label", c1: P.purpleDark }, footer: { type: "inline", color: P.purpleDark } },
+    { note: "Crachá, fundo branco, cordão roxo", bg: { mode: "solid", c1: white }, shape: "badge", scale: 1, tilt: 2, accent: P.purple, cardFill: white, ink: P.purpleDark, photoShape: "rounded", stripeHeader: true, lanyard: true, deco: "qr", muted: muted, headline: { type: "serif", c1: P.purpleDark, c2: P.orange }, footer: { type: "inline", color: P.purpleDark } },
+    { note: "Crachá, duplo acento", bg: { mode: "gradient", c1: P.purpleDark, c2: P.orange }, shape: "badge", scale: 0.95, tilt: -6, accent: P.orange, cardFill: white, ink: P.purpleDark, photoShape: "circle", stripeHeader: true, lanyard: true, deco: "barcode", muted: muted, headline: { type: "none" }, footer: { type: "pills", color: "#fff", pill: "rgba(255,255,255,0.18)" } },
+    { note: "Cartão horizontal, minimalista", bg: { mode: "solid", c1: white }, shape: "horizontal", scale: 1, tilt: 0, accent: P.orange, cardFill: cream, ink: P.purpleDark, photoShape: "rounded", stripeHeader: false, lanyard: false, deco: "none", muted: muted, headline: { type: "label", c1: P.purpleDark }, footer: { type: "inline", color: P.purpleDark } },
+  ];
+
+  var FONT_PAIRS = [
+    { display: 'Georgia, "Times New Roman", serif', body: '"Segoe UI", Arial, sans-serif' },
+    { display: '"Times New Roman", Georgia, serif', body: 'Arial, Helvetica, sans-serif' },
+    { display: '"Garamond", Georgia, serif', body: '"Trebuchet MS", sans-serif' },
+    { display: '"Rockwell", Georgia, serif', body: '"Segoe UI", sans-serif' },
+    { display: '"Arial Black", Arial, sans-serif', body: '"Segoe UI", sans-serif' },
+    { display: '"Consolas", "Courier New", monospace', body: '"Segoe UI", sans-serif' },
+    { display: '"Franklin Gothic Medium", Arial, sans-serif', body: 'Georgia, serif' },
+    { display: 'Verdana, sans-serif', body: 'Georgia, serif' },
+    { display: '"Bahnschrift", "Segoe UI", sans-serif', body: '"Segoe UI", sans-serif' },
+    { display: '"Segoe UI Semibold", "Segoe UI", sans-serif', body: '"Consolas", monospace' },
+  ];
+  CONFIGS.forEach(function (cfg, i) {
+    cfg.fonts = FONT_PAIRS[i % FONT_PAIRS.length];
+    if (cfg.headline.type === "bold" && !cfg.headline.weight) cfg.headline.weight = "800";
+    if (cfg.headline.type === "serif" && !cfg.headline.style) cfg.headline.style = "italic 400";
+    cfg.note += "  ·  " + cfg.fonts.display.split(",")[0].replace(/"/g, "");
+  });
+
+  var grid = document.getElementById("grid");
+  CONFIGS.forEach(function (cfg, i) {
+    var tile = document.createElement("div");
+    tile.className = "tile";
+    var frame = document.createElement("div");
+    frame.className = "canvas-frame";
+    var canvas = document.createElement("canvas");
+    canvas.width = 1080; canvas.height = 1080;
+    frame.appendChild(canvas);
+    tile.appendChild(frame);
+    var tag = document.createElement("div");
+    tag.className = "tag";
+    tag.innerHTML = '<span class="num">' + (i + 1) + "</span> — " + cfg.note;
+    tile.appendChild(tag);
+    grid.appendChild(tile);
+    renderVariant(canvas.getContext("2d"), cfg);
+  });
+})();
+</script>

@@ -2,11 +2,10 @@
   --impar-purple: #801C73;
   --impar-purple-dark: #5F1555;
   --impar-orange: #F07134;
-  --bg: #0d0609;
-  --bg-panel: #160a14;
-  --border: rgba(240, 113, 52, 0.35);
-  --text: #f3e9f0;
-  --text-muted: #c9b3c4;
+  --bg: #f3f1f4;
+  --text: #2b1130;
+  --text-muted: #6b5a6a;
+  --border: #e3dbe2;
 }
 
 * {
@@ -17,7 +16,6 @@ body {
   margin: 0;
   min-height: 100vh;
   background: var(--bg);
-  background-image: radial-gradient(circle at 50% 0%, rgba(128, 28, 115, 0.25), transparent 60%);
   color: var(--text);
   font-family: "Muli", "Segoe UI", system-ui, -apple-system, sans-serif;
 }
@@ -36,7 +34,7 @@ body {
 .page-header h1 {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 28px;
-  color: var(--impar-orange);
+  color: var(--impar-purple-dark);
   margin: 0 0 8px;
 }
 
@@ -53,7 +51,7 @@ body {
 }
 
 .panel {
-  background: var(--bg-panel);
+  background: #ffffff;
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 24px;
@@ -70,13 +68,20 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.preview-panel h2 {
+  align-self: center;
 }
 
 .panel h2 {
   font-size: 15px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--impar-orange);
+  color: var(--impar-purple);
   margin: 0 0 14px;
 }
 
@@ -100,7 +105,7 @@ body {
 .field input[type="file"],
 .field textarea {
   width: 100%;
-  background: #1f0f1c;
+  background: #faf8fb;
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 10px 12px;
@@ -144,13 +149,56 @@ body {
   color: var(--impar-orange);
 }
 
+.template-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.template-option {
+  width: 86px;
+  background: #faf8fb;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.template-option canvas {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 6px;
+  display: block;
+}
+
+.template-option span {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.template-option.selected {
+  border-color: var(--impar-orange);
+  box-shadow: 0 0 0 1px var(--impar-orange);
+}
+
+.template-option.selected span {
+  color: var(--text);
+  font-weight: 600;
+}
+
 .canvas-wrap {
   width: 100%;
   max-width: 480px;
   aspect-ratio: 1 / 1;
   border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 0 40px rgba(128, 28, 115, 0.45);
+  overflow: visible;
 }
 
 #ticket {

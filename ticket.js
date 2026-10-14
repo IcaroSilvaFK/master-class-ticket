@@ -1,26 +1,11 @@
 (function () {
   "use strict";
 
-  var W = 1080;
-  var H = 1080;
-  var CX = W / 2;
+  var P = { purple: "#801C73", purpleDark: "#5F1555", orange: "#F07134" };
+  var white = "#ffffff";
+  var muted = "#c9bcc6";
 
-  var COLORS = {
-    purple: "#801C73",
-    purpleDark: "#5F1555",
-    orange: "#F07134",
-    cream: "#f3e9f0",
-  };
-
-  var SERIF = 'Georgia, "Times New Roman", serif';
-  var KANJI_FONT = '"Yu Mincho", "MS Mincho", "Hiragino Mincho ProN", serif';
-
-  var MODULES = [
-    { num: "一", text: "Claude Code + extensão no navegador" },
-    { num: "二", text: "Spec Driven Development" },
-    { num: "三", text: "Agentes no Copilot Studio" },
-    { num: "四", text: "Case: dashboard no Power BI" },
-  ];
+  var MODULES = ["CLAUDE CODE", "SPEC DRIVEN DEV", "COPILOT STUDIO", "POWER BI"];
 
   var CAPTION =
     "🥋 Acabei de garantir meu lugar na Primeira Masterclass de Inteligência Artificial da Ímpar!\n\n" +
@@ -28,9 +13,79 @@
     "Bora evoluir juntos nessa jornada de IA! 🖤\n\n" +
     "#Ímpar #MasterclassIA #InteligênciaArtificial #IA #Inovação";
 
-  // ---------- helpers ----------
+  // ---------- templates ----------
 
-  function drawRoundRect(ctx, x, y, w, h, r) {
+  var TEMPLATES = [
+    {
+      id: "rockwell-badge",
+      label: "Crachá roxo · Rockwell",
+      cfg: {
+        bg: { mode: "gradient", c1: P.purple, c2: P.purpleDark },
+        shape: "badge", scale: 1.05, tilt: 4,
+        accent: P.orange, cardFill: white, ink: P.purpleDark, muted: muted,
+        photoShape: "circle", stripeHeader: false, lanyard: true, deco: "barcode",
+        headline: { type: "none" },
+        footer: { type: "pills", color: "#fff", pill: "rgba(255,255,255,0.18)" },
+        fonts: { display: '"Rockwell", Georgia, serif', body: '"Segoe UI", sans-serif' },
+      },
+    },
+    {
+      id: "franklin-horizontal",
+      label: "Cartão roxo · Franklin Gothic",
+      cfg: {
+        bg: { mode: "solid", c1: P.purpleDark },
+        shape: "horizontal", scale: 1, tilt: -3,
+        accent: P.orange, cardFill: white, ink: P.purpleDark, muted: muted,
+        photoShape: "rounded", stripeHeader: true, lanyard: false, deco: "barcode",
+        headline: { type: "bold", c1: "#fff", c2: P.orange, weight: "800" },
+        footer: { type: "inline", color: "#fff" },
+        fonts: { display: '"Franklin Gothic Medium", Arial, sans-serif', body: "Georgia, serif" },
+      },
+    },
+    {
+      id: "verdana-horizontal",
+      label: "Cartão laranja · Verdana",
+      cfg: {
+        bg: { mode: "solid", c1: P.orange },
+        shape: "horizontal", scale: 1, tilt: 3,
+        accent: P.purpleDark, cardFill: white, ink: P.purpleDark, muted: muted,
+        photoShape: "circle", stripeHeader: false, lanyard: false, deco: "barcode",
+        headline: { type: "label", c1: "#fff" },
+        footer: { type: "inline", color: "#fff" },
+        fonts: { display: "Verdana, sans-serif", body: "Georgia, serif" },
+      },
+    },
+    {
+      id: "georgia-gradient-horizontal",
+      label: "Cartão gradiente · Georgia",
+      cfg: {
+        bg: { mode: "gradient", c1: P.orange, c2: P.purpleDark },
+        shape: "horizontal", scale: 1, tilt: 0,
+        accent: P.purpleDark, cardFill: white, ink: P.purpleDark, muted: muted,
+        photoShape: "circle", stripeHeader: true, lanyard: false, deco: "barcode",
+        headline: { type: "bold", c1: "#fff", c2: "#fff", weight: "800" },
+        footer: { type: "inline", color: "#fff" },
+        fonts: { display: 'Georgia, "Times New Roman", serif', body: '"Segoe UI", Arial, sans-serif' },
+      },
+    },
+    {
+      id: "bahnschrift-badge",
+      label: "Crachá duplo acento · Bahnschrift",
+      cfg: {
+        bg: { mode: "gradient", c1: P.purpleDark, c2: P.orange },
+        shape: "badge", scale: 0.95, tilt: -6,
+        accent: P.orange, cardFill: white, ink: P.purpleDark, muted: muted,
+        photoShape: "circle", stripeHeader: true, lanyard: true, deco: "barcode",
+        headline: { type: "none" },
+        footer: { type: "pills", color: "#fff", pill: "rgba(255,255,255,0.18)" },
+        fonts: { display: '"Bahnschrift", "Segoe UI", sans-serif', body: '"Segoe UI", sans-serif' },
+      },
+    },
+  ];
+
+  // ---------- drawing helpers ----------
+
+  function roundRect(ctx, x, y, w, h, r) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
     ctx.arcTo(x + w, y, x + w, y + h, r);
@@ -39,309 +94,272 @@
     ctx.arcTo(x, y, x + w, y, r);
     ctx.closePath();
   }
-
-  function trackedWidth(ctx, text, spacing) {
+  function roundRectTop(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x, y + h);
+    ctx.lineTo(x, y + r);
+    ctx.arcTo(x, y, x + r, y, r);
+    ctx.lineTo(x + w - r, y);
+    ctx.arcTo(x + w, y, x + w, y + r, r);
+    ctx.lineTo(x + w, y + h);
+    ctx.closePath();
+  }
+  function trackedWidth(ctx, text, sp) {
     var w = 0;
-    for (var i = 0; i < text.length; i++) {
-      w += ctx.measureText(text[i]).width;
-      if (i < text.length - 1) w += spacing;
-    }
+    for (var i = 0; i < text.length; i++) { w += ctx.measureText(text[i]).width; if (i < text.length - 1) w += sp; }
     return w;
   }
-
-  function drawTrackedText(ctx, text, cx, y, spacing) {
-    var total = trackedWidth(ctx, text, spacing);
+  function trackedText(ctx, text, cx, y, sp) {
+    var total = trackedWidth(ctx, text, sp);
     var x = cx - total / 2;
+    var prev = ctx.textAlign;
     ctx.textAlign = "left";
-    for (var i = 0; i < text.length; i++) {
-      var ch = text[i];
-      ctx.fillText(ch, x, y);
-      x += ctx.measureText(ch).width + spacing;
+    for (var i = 0; i < text.length; i++) { ctx.fillText(text[i], x, y); x += ctx.measureText(text[i]).width + sp; }
+    ctx.textAlign = prev;
+  }
+  function trackedTextLeft(ctx, text, x, y, sp) {
+    var cur = x;
+    for (var i = 0; i < text.length; i++) { ctx.fillText(text[i], cur, y); cur += ctx.measureText(text[i]).width + sp; }
+  }
+  function wrapLines(ctx, text, maxWidth) {
+    var words = text.split(" "), lines = [], cur = "";
+    for (var i = 0; i < words.length; i++) {
+      var t = cur ? cur + " " + words[i] : words[i];
+      if (ctx.measureText(t).width > maxWidth && cur) { lines.push(cur); cur = words[i]; } else cur = t;
     }
+    if (cur) lines.push(cur);
+    return lines;
   }
-
-  function drawVerticalKanji(ctx, chars, x, cy, color, size, alpha) {
-    ctx.save();
-    ctx.font = size + "px " + KANJI_FONT;
-    ctx.fillStyle = color;
-    ctx.globalAlpha = alpha;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    var step = size * 1.25;
-    var totalH = step * (chars.length - 1);
-    var startY = cy - totalH / 2;
-    for (var i = 0; i < chars.length; i++) {
-      ctx.fillText(chars[i], x, startY + i * step);
+  function barcode(ctx, x, y, w, h, color) {
+    ctx.save(); ctx.fillStyle = color;
+    var cx = x, seed = 7;
+    while (cx < x + w) {
+      seed = (seed * 13 + 5) % 11;
+      var bw = 2 + (seed % 4);
+      if (seed % 3 !== 0) ctx.fillRect(cx, y, bw, h);
+      cx += bw + 3;
     }
     ctx.restore();
   }
-
-  // ---------- drawing sections ----------
-
-  function drawBackground(ctx) {
-    var cx = CX;
-    var cy = H * 0.42;
-
-    ctx.fillStyle = "#fffaf8";
-    ctx.fillRect(0, 0, W, H);
-
-    var glowPurple = ctx.createRadialGradient(170, 170, 0, 170, 170, 560);
-    glowPurple.addColorStop(0, "rgba(128, 28, 115, 0.20)");
-    glowPurple.addColorStop(1, "rgba(128, 28, 115, 0)");
-    ctx.fillStyle = glowPurple;
-    ctx.fillRect(0, 0, W, H);
-
-    var glowOrange = ctx.createRadialGradient(cx, 500, 0, cx, 500, 440);
-    glowOrange.addColorStop(0, "rgba(240, 113, 52, 0.18)");
-    glowOrange.addColorStop(1, "rgba(240, 113, 52, 0)");
-    ctx.fillStyle = glowOrange;
-    ctx.fillRect(0, 0, W, H);
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(0, H * 0.8);
-    ctx.bezierCurveTo(W * 0.3, H * 0.72, W * 0.7, H * 0.97, W, H * 0.82);
-    ctx.lineTo(W, H);
-    ctx.lineTo(0, H);
-    ctx.closePath();
-    var wave = ctx.createLinearGradient(0, H * 0.75, W, H);
-    wave.addColorStop(0, COLORS.purple);
-    wave.addColorStop(1, COLORS.orange);
-    ctx.globalAlpha = 0.14;
-    ctx.fillStyle = wave;
-    ctx.fill();
-    ctx.restore();
-
-    ctx.save();
-    ctx.strokeStyle = "rgba(128, 28, 115, 0.5)";
-    ctx.lineWidth = 3;
-    ctx.strokeRect(22, 22, W - 44, H - 44);
-    ctx.strokeStyle = "rgba(240, 113, 52, 0.4)";
-    ctx.lineWidth = 1;
-    ctx.strokeRect(32, 32, W - 64, H - 64);
-    ctx.restore();
-  }
-
-  function drawHeader(ctx) {
-    var y = 96;
-    var text = "ÍMPAR · 21 · 10 · 2026";
-    ctx.save();
-    ctx.font = "600 26px " + SERIF;
-    ctx.fillStyle = COLORS.orange;
-    ctx.textBaseline = "middle";
-    var spacing = 6;
-    drawTrackedText(ctx, text, CX, y, spacing);
-
-    var halfW = trackedWidth(ctx, text, spacing) / 2;
-    var lineY = y;
-    var margin = 70;
-    var gap = 24;
-
-    var gradL = ctx.createLinearGradient(margin, 0, CX - halfW - gap, 0);
-    gradL.addColorStop(0, "rgba(240,113,52,0)");
-    gradL.addColorStop(1, "rgba(240,113,52,0.8)");
-    ctx.strokeStyle = gradL;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(margin, lineY);
-    ctx.lineTo(CX - halfW - gap, lineY);
-    ctx.stroke();
-
-    var gradR = ctx.createLinearGradient(CX + halfW + gap, 0, W - margin, 0);
-    gradR.addColorStop(0, "rgba(240,113,52,0.8)");
-    gradR.addColorStop(1, "rgba(240,113,52,0)");
-    ctx.strokeStyle = gradR;
-    ctx.beginPath();
-    ctx.moveTo(CX + halfW + gap, lineY);
-    ctx.lineTo(W - margin, lineY);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  function drawTitle(ctx) {
-    ctx.save();
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-
-    ctx.fillStyle = COLORS.purpleDark;
-    ctx.font = "italic 400 60px " + SERIF;
-    ctx.fillText("Primeira Masterclass", CX, 190);
-
-    ctx.font = "600 30px " + SERIF;
-    ctx.fillStyle = COLORS.orange;
-    drawTrackedText(ctx, "DE INTELIGÊNCIA ARTIFICIAL", CX, 242, 3);
-    ctx.restore();
-  }
-
-  function drawEnso(ctx, cx, cy, r) {
-    ctx.save();
-    var passes = 5;
-    for (var i = 0; i < passes; i++) {
-      var wobble = (Math.random() - 0.5) * 6;
-      var rr = r + wobble;
-      var startAngle = (-0.65 + (Math.random() - 0.5) * 0.12) * Math.PI;
-      var endAngle = (1.55 + (Math.random() - 0.5) * 0.12) * Math.PI;
-      ctx.beginPath();
-      ctx.arc(cx, cy, rr, startAngle, endAngle);
-      ctx.lineWidth = 15 - i * 1.6;
-      ctx.lineCap = "round";
-      ctx.strokeStyle = i % 2 === 0 ? "rgba(240,113,52,0.55)" : "rgba(128,28,115,0.55)";
-      ctx.globalAlpha = 0.45 + Math.random() * 0.3;
-      ctx.stroke();
+  function qrPattern(ctx, x, y, size, color) {
+    ctx.save(); ctx.fillStyle = color;
+    var cells = 7, cell = size / cells, seed = 3;
+    for (var r = 0; r < cells; r++) {
+      for (var c = 0; c < cells; c++) {
+        seed = (seed * 17 + 11) % 13;
+        var corner = (r < 2 && c < 2) || (r < 2 && c > cells - 3) || (r > cells - 3 && c < 2);
+        if (corner || seed % 2 === 0) ctx.fillRect(x + c * cell, y + r * cell, cell - 1.5, cell - 1.5);
+      }
     }
     ctx.restore();
   }
 
-  function drawAvatar(ctx, cx, cy, r, photoImg, name) {
+  function drawPhoto(ctx, shape, cx, cy, size, photoImg, initial, displayFont) {
     ctx.save();
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.closePath();
-    ctx.clip();
+    if (shape === "circle") { ctx.beginPath(); ctx.arc(cx, cy, size / 2, 0, Math.PI * 2); ctx.clip(); }
+    else { var rr = shape === "square" ? 6 : size * 0.16; roundRect(ctx, cx - size / 2, cy - size / 2, size, size, rr); ctx.clip(); }
 
     if (photoImg) {
-      var scale = Math.max((r * 2) / photoImg.width, (r * 2) / photoImg.height);
-      var w = photoImg.width * scale;
-      var h = photoImg.height * scale;
+      var scale = Math.max(size / photoImg.width, size / photoImg.height);
+      var w = photoImg.width * scale, h = photoImg.height * scale;
       ctx.drawImage(photoImg, cx - w / 2, cy - h / 2, w, h);
     } else {
-      var grad = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
-      grad.addColorStop(0, COLORS.purpleDark);
-      grad.addColorStop(1, COLORS.purple);
-      ctx.fillStyle = grad;
-      ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
-
-      var initial = name && name.trim() ? name.trim()[0].toUpperCase() : "侍";
-      ctx.fillStyle = "rgba(255,255,255,0.85)";
-      ctx.font = "700 " + Math.round(r * 0.85) + "px " + SERIF;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(initial, cx, cy + 8);
+      var g = ctx.createLinearGradient(cx - size / 2, cy - size / 2, cx + size / 2, cy + size / 2);
+      g.addColorStop(0, P.purpleDark); g.addColorStop(1, P.purple);
+      ctx.fillStyle = g; ctx.fillRect(cx - size / 2, cy - size / 2, size, size);
+      ctx.fillStyle = "rgba(255,255,255,0.88)";
+      ctx.font = "700 " + Math.round(size * 0.44) + "px " + displayFont;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText(initial, cx, cy + size * 0.03);
     }
     ctx.restore();
+  }
 
+  function drawBG(ctx, bg) {
+    var W = 1080, H = 1080;
+    if (bg.mode === "solid") { ctx.fillStyle = bg.c1; ctx.fillRect(0, 0, W, H); }
+    else if (bg.mode === "gradient") {
+      var g = ctx.createLinearGradient(0, 0, W, H);
+      g.addColorStop(0, bg.c1); g.addColorStop(1, bg.c2);
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    } else { ctx.fillStyle = bg.c1; ctx.fillRect(0, 0, W, H); }
+  }
+
+  function drawHeadline(ctx, cfg) {
+    var CX = 540;
+    if (cfg.headline.type === "none") return;
+    var BODY = cfg.fonts.body, DISPLAY = cfg.fonts.display;
     ctx.save();
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.lineWidth = 6;
-    ctx.strokeStyle = COLORS.orange;
-    ctx.stroke();
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    if (cfg.headline.type === "bold") {
+      ctx.font = "700 15px " + BODY; ctx.fillStyle = cfg.headline.c2;
+      trackedText(ctx, "SUA CREDENCIAL", CX, 70, 3);
+      ctx.font = (cfg.headline.weight || "800") + " 54px " + DISPLAY; ctx.fillStyle = cfg.headline.c1;
+      ctx.fillText("MASTERCLASS DE IA", CX, 124);
+      ctx.font = "600 16px " + BODY; ctx.fillStyle = cfg.headline.c2;
+      trackedText(ctx, "21 · 10 · 2026", CX, 164, 2);
+    } else if (cfg.headline.type === "serif") {
+      ctx.font = "700 14px " + BODY; ctx.fillStyle = cfg.headline.c2;
+      trackedText(ctx, "CARTÃO DE PARTICIPAÇÃO", CX, 76, 3);
+      ctx.font = (cfg.headline.style || "italic 400") + " 42px " + DISPLAY; ctx.fillStyle = cfg.headline.c1;
+      ctx.fillText("Primeira Masterclass de IA", CX, 128);
+    } else if (cfg.headline.type === "label") {
+      ctx.font = "700 15px " + BODY; ctx.fillStyle = cfg.headline.c1;
+      trackedText(ctx, "ÍMPAR · MASTERCLASS DE IA · 21.10.2026", CX, 70, 2);
+    }
     ctx.restore();
   }
 
-  function drawName(ctx, name, cx, y) {
-    ctx.save();
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = COLORS.purpleDark;
-    ctx.font = "700 42px " + SERIF;
-    ctx.fillText(name || "Seu Nome", cx, y);
-
-    ctx.strokeStyle = COLORS.orange;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(cx - 60, y + 34);
-    ctx.lineTo(cx + 60, y + 34);
-    ctx.stroke();
+  function drawFooter(ctx, cfg) {
+    if (cfg.footer.type === "none") return;
+    var CX = 540, y = 1032;
+    ctx.save(); ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    if (cfg.footer.type === "inline") {
+      ctx.font = "600 15px " + cfg.fonts.body; ctx.fillStyle = cfg.footer.color;
+      trackedText(ctx, MODULES.join("   ·   "), CX, y, 1);
+    } else if (cfg.footer.type === "pills") {
+      var totalW = 0, widths = [];
+      MODULES.forEach(function (m) {
+        ctx.font = "700 13px " + cfg.fonts.body;
+        var w = ctx.measureText(m).width + 28;
+        widths.push(w); totalW += w + 10;
+      });
+      totalW -= 10;
+      var x = CX - totalW / 2, h = 34;
+      MODULES.forEach(function (m, i) {
+        var w = widths[i];
+        roundRect(ctx, x, y - h / 2, w, h, h / 2);
+        ctx.fillStyle = cfg.footer.pill; ctx.fill();
+        ctx.font = "700 13px " + cfg.fonts.body;
+        ctx.fillStyle = cfg.footer.color;
+        ctx.fillText(m, x + w / 2, y + 1);
+        x += w + 10;
+      });
+    }
     ctx.restore();
   }
 
-  function drawSideKanji(ctx) {
-    drawVerticalKanji(ctx, "人工知能".split(""), 66, 560, COLORS.purple, 34, 0.18);
-    drawVerticalKanji(ctx, "道場".split(""), 1014, 560, COLORS.purple, 34, 0.18);
+  function shapeDims(shape, scale) {
+    if (shape === "horizontal") return { w: 760 * scale, h: 440 * scale, kind: shape };
+    if (shape === "square") return { w: 520 * scale, h: 520 * scale, kind: shape };
+    return { w: 420 * scale, h: 560 * scale, kind: "badge" };
   }
 
-  function drawBeltSeal(ctx) {
-    var cx = W - 150;
-    var cy = 150;
-    var r = 72;
+  function drawLanyardLocal(ctx, dims, color) {
+    var topEdge = -dims.h / 2;
     ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate((-8 * Math.PI) / 180);
-
+    ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(0, 0, r, 0, Math.PI * 2);
-    ctx.fillStyle = COLORS.purpleDark;
+    ctx.moveTo(-42, topEdge - 80);
+    ctx.lineTo(42, topEdge - 80);
+    ctx.lineTo(28, topEdge - 14);
+    ctx.lineTo(-28, topEdge - 14);
+    ctx.closePath();
     ctx.fill();
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = COLORS.orange;
-    ctx.stroke();
-
     ctx.beginPath();
-    ctx.arc(0, 0, r - 10, 0, Math.PI * 2);
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = "rgba(255,255,255,0.4)";
-    ctx.stroke();
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "700 " + Math.round(r * 0.55) + "px " + KANJI_FONT;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("黒帯", 0, 2);
+    ctx.arc(0, topEdge - 10, 11, 0, Math.PI * 2);
+    ctx.lineWidth = 5; ctx.strokeStyle = "rgba(255,255,255,0.92)"; ctx.stroke();
     ctx.restore();
   }
 
-  function drawModuleChips(ctx) {
-    var pad = 70;
-    var rowH = 46;
-    var gap = 12;
-    var startY = 828;
-    var w = W - pad * 2;
+  function drawCardLocal(ctx, dims, cfg, name, photoImg) {
+    var w = dims.w, h = dims.h, x0 = -w / 2, y0 = -h / 2;
+    var initial = name && name.trim() ? name.trim()[0].toUpperCase() : "S";
 
-    MODULES.forEach(function (mod, i) {
-      var y = startY + i * (rowH + gap);
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,0.28)"; ctx.shadowBlur = 42; ctx.shadowOffsetY = 20;
+    roundRect(ctx, x0, y0, w, h, 30);
+    ctx.fillStyle = cfg.cardFill; ctx.fill();
+    ctx.restore();
 
+    var stripeH = 0;
+    if (cfg.stripeHeader) {
+      stripeH = h * 0.16;
       ctx.save();
-      drawRoundRect(ctx, pad, y, w, rowH, rowH / 2);
-      ctx.fillStyle = "rgba(128, 28, 115, 0.35)";
-      ctx.fill();
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = "rgba(240, 113, 52, 0.6)";
-      ctx.stroke();
-
-      var circleR = rowH / 2 - 4;
-      var circleCx = pad + rowH / 2;
-      var circleCy = y + rowH / 2;
-      ctx.beginPath();
-      ctx.arc(circleCx, circleCy, circleR, 0, Math.PI * 2);
-      ctx.fillStyle = COLORS.orange;
-      ctx.fill();
-
-      ctx.fillStyle = "#1a0617";
-      ctx.font = "700 20px " + KANJI_FONT;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(mod.num, circleCx, circleCy + 1);
-
-      ctx.fillStyle = COLORS.purpleDark;
-      ctx.font = "600 23px " + SERIF;
-      ctx.textAlign = "left";
-      ctx.fillText(mod.text, pad + rowH + 18, circleCy + 1);
+      roundRectTop(ctx, x0, y0, w, stripeH, 30);
+      ctx.fillStyle = cfg.accent; ctx.fill();
+      ctx.font = "800 " + Math.round(w * 0.065) + "px " + cfg.fonts.body;
+      ctx.fillStyle = "#ffffff"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      trackedText(ctx, "ÍMPAR", 0, y0 + stripeH * 0.52, 2);
       ctx.restore();
-    });
+    }
+
+    if (cfg.lanyard) {
+      ctx.save();
+      ctx.beginPath(); ctx.arc(0, y0 + 24, 12, 0, Math.PI * 2);
+      ctx.fillStyle = cfg.cardFill;
+      ctx.globalCompositeOperation = "destination-out"; ctx.fill();
+      ctx.restore();
+    }
+
+    ctx.save();
+    roundRect(ctx, x0, y0, w, h, 30);
+    ctx.lineWidth = 1.5; ctx.strokeStyle = "rgba(95,21,85,0.14)"; ctx.stroke();
+    ctx.restore();
+
+    if (dims.kind === "horizontal") {
+      var photoSize = h * 0.56;
+      var photoCx = x0 + w * 0.26, photoCy = 0;
+      drawPhoto(ctx, cfg.photoShape, photoCx, photoCy, photoSize, photoImg, initial, cfg.fonts.display);
+      var textX = x0 + w * 0.48;
+      ctx.save();
+      ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      ctx.font = "700 " + Math.round(h * 0.09) + "px " + cfg.fonts.display; ctx.fillStyle = cfg.ink;
+      ctx.fillText(name || "Seu Nome", textX, photoCy - h * 0.1);
+      ctx.font = "700 " + Math.round(h * 0.032) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
+      trackedTextLeft(ctx, "PARTICIPANTE", textX, photoCy - h * 0.02, 2);
+      ctx.font = "600 " + Math.round(h * 0.036) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.ink;
+      wrapLines(ctx, "Masterclass de Inteligência Artificial", w * 0.42).forEach(function (line, i) {
+        ctx.fillText(line, textX, photoCy + h * 0.08 + i * h * 0.05);
+      });
+      ctx.font = "700 " + Math.round(h * 0.034) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
+      ctx.fillText("21 · 10 · 2026", textX, photoCy + h * 0.22);
+      ctx.restore();
+
+      if (cfg.deco === "barcode") barcode(ctx, x0 + w * 0.04, y0 + h - h * 0.1, w * 0.92, h * 0.045, cfg.muted);
+      if (cfg.deco === "qr") qrPattern(ctx, x0 + w - w * 0.16, y0 + h - h * 0.2, h * 0.16, cfg.muted);
+    } else {
+      var topPad = stripeH + h * 0.1;
+      var pR = w * 0.26;
+      var pCy = y0 + topPad + pR;
+      drawPhoto(ctx, cfg.photoShape, 0, pCy, pR * 2, photoImg, initial, cfg.fonts.display);
+
+      var nameY = pCy + pR + h * 0.1;
+      ctx.save();
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.font = "700 " + Math.round(w * 0.082) + "px " + cfg.fonts.display; ctx.fillStyle = cfg.ink;
+      ctx.fillText(name || "Seu Nome", 0, nameY);
+      ctx.font = "700 " + Math.round(w * 0.032) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
+      trackedText(ctx, "PARTICIPANTE", 0, nameY + h * 0.07, 3);
+
+      ctx.strokeStyle = "rgba(95,21,85,0.14)"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x0 + w * 0.12, nameY + h * 0.12); ctx.lineTo(x0 + w - w * 0.12, nameY + h * 0.12); ctx.stroke();
+
+      ctx.font = "600 " + Math.round(w * 0.04) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.ink;
+      wrapLines(ctx, "MASTERCLASS DE INTELIGÊNCIA ARTIFICIAL", w - w * 0.24).forEach(function (line, i) {
+        ctx.fillText(line, 0, nameY + h * 0.2 + i * h * 0.045);
+      });
+      ctx.font = "700 " + Math.round(w * 0.038) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
+      trackedText(ctx, "21 · 10 · 2026", 0, nameY + h * 0.32, 2);
+      ctx.restore();
+
+      if (cfg.deco === "barcode") barcode(ctx, x0 + w * 0.1, y0 + h - h * 0.08, w * 0.8, h * 0.035, cfg.muted);
+      if (cfg.deco === "qr") qrPattern(ctx, 0 - h * 0.08, y0 + h - h * 0.16, h * 0.13, cfg.muted);
+    }
   }
 
-  // ---------- orchestrator ----------
-
-  function drawTicket(ctx, opts) {
-    var name = (opts && opts.name) || "";
-    var photoImg = opts && opts.photoImg;
-
-    ctx.clearRect(0, 0, W, H);
-    drawBackground(ctx);
-    drawHeader(ctx);
-    drawTitle(ctx);
-    drawSideKanji(ctx);
-    drawBeltSeal(ctx);
-
-    var ensoCx = CX;
-    var ensoCy = 500;
-    var ensoR = 215;
-    drawEnso(ctx, ensoCx, ensoCy, ensoR);
-    drawAvatar(ctx, ensoCx, ensoCy, 182, photoImg, name);
-    drawName(ctx, name, CX, 745);
-
-    drawModuleChips(ctx);
+  function renderTemplate(ctx, cfg, name, photoImg) {
+    ctx.clearRect(0, 0, 1080, 1080);
+    drawBG(ctx, cfg.bg);
+    drawHeadline(ctx, cfg);
+    var dims = shapeDims(cfg.shape, cfg.scale);
+    ctx.save();
+    ctx.translate(540, 560);
+    if (cfg.tilt) ctx.rotate((cfg.tilt * Math.PI) / 180);
+    if (cfg.lanyard) drawLanyardLocal(ctx, dims, cfg.accent);
+    drawCardLocal(ctx, dims, cfg, name, photoImg);
+    ctx.restore();
+    drawFooter(ctx, cfg);
   }
 
   // ---------- wiring ----------
@@ -353,11 +371,40 @@
   var downloadBtn = document.getElementById("downloadBtn");
   var captionText = document.getElementById("captionText");
   var copyBtn = document.getElementById("copyBtn");
+  var templatePicker = document.getElementById("templatePicker");
 
-  var state = { photoImg: null };
+  var state = { photoImg: null, templateIndex: 0 };
 
   function render() {
-    drawTicket(ctx, { name: nameInput.value, photoImg: state.photoImg });
+    var tpl = TEMPLATES[state.templateIndex];
+    renderTemplate(ctx, tpl.cfg, nameInput.value, state.photoImg);
+  }
+
+  function buildPicker() {
+    TEMPLATES.forEach(function (tpl, i) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "template-option" + (i === state.templateIndex ? " selected" : "");
+
+      var thumb = document.createElement("canvas");
+      thumb.width = 1080;
+      thumb.height = 1080;
+      btn.appendChild(thumb);
+
+      var span = document.createElement("span");
+      span.textContent = tpl.label;
+      btn.appendChild(span);
+
+      btn.addEventListener("click", function () {
+        state.templateIndex = i;
+        Array.prototype.forEach.call(templatePicker.children, function (el) { el.classList.remove("selected"); });
+        btn.classList.add("selected");
+        render();
+      });
+
+      templatePicker.appendChild(btn);
+      renderTemplate(thumb.getContext("2d"), tpl.cfg, "", null);
+    });
   }
 
   function downloadPNG() {
@@ -373,9 +420,7 @@
       function () {
         var original = copyBtn.textContent;
         copyBtn.textContent = "Copiado!";
-        setTimeout(function () {
-          copyBtn.textContent = original;
-        }, 2000);
+        setTimeout(function () { copyBtn.textContent = original; }, 2000);
       },
       function () {
         captionText.select();
@@ -405,5 +450,6 @@
   copyBtn.addEventListener("click", copyCaption);
 
   captionText.value = CAPTION;
+  buildPicker();
   render();
 })();
