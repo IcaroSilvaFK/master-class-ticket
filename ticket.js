@@ -383,7 +383,7 @@
 
       var modLabelY = hDateY + h * 0.11;
       ctx.font = "700 " + Math.round(h * 0.03) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
-      trackedTextLeft(ctx, "VOCÊ VAI APRENDER", textX, modLabelY, 2);
+      trackedTextLeft(ctx, "O QUE EU APRENDI", textX, modLabelY, 2);
 
       var modFont = Math.round(h * 0.034);
       ctx.font = "700 " + modFont + "px " + cfg.fonts.body;
