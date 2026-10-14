@@ -8,10 +8,11 @@
   var MODULES = ["CLAUDE CODE", "SPEC DRIVEN DEV", "COPILOT STUDIO", "POWER BI"];
 
   var CAPTION =
-    "🥋 Acabei de garantir meu lugar na Primeira Masterclass de Inteligência Artificial da Ímpar!\n\n" +
-    "21/10/2026 — um dojô de conhecimento com Claude Code, Spec Driven Development, Agentes no Copilot Studio e um case real de dashboard no Power BI.\n\n" +
-    "Bora evoluir juntos nessa jornada de IA! 🖤\n\n" +
-    "#Ímpar #MasterclassIA #InteligênciaArtificial #IA #Inovação";
+    "🥋 Ticket na mão. Próxima parada: o dojô da IA!\n\n" +
+    "No dia 21 de outubro, vou participar da Primeira Masterclass de Inteligência Artificial da Ímpar. Uma oportunidade para aprender, experimentar e descobrir novas formas de aplicar IA no dia a dia.\n\n" +
+    "Nosso treino passa por Claude Code, Spec Driven Development, agentes no Copilot Studio e um case de dashboard no Power BI. 🚀\n\n" +
+    "A jornada até a faixa-preta começa com prática, curiosidade e troca de conhecimento. Bora treinar juntos?\n\n" +
+    "#Ímpar #InteligênciaArtificial #MasterclassIA #AprendizadoContínuo";
 
   // ---------- templates ----------
 
@@ -185,6 +186,16 @@
     } else { ctx.fillStyle = bg.c1; ctx.fillRect(0, 0, W, H); }
   }
 
+  var DARK_CHIP = "rgba(37, 10, 33, 0.85)";
+
+  function drawScrim(ctx, cx, cy, w, h, r) {
+    ctx.save();
+    roundRect(ctx, cx - w / 2, cy - h / 2, w, h, r);
+    ctx.fillStyle = DARK_CHIP;
+    ctx.fill();
+    ctx.restore();
+  }
+
   function drawHeadline(ctx, cfg) {
     var CX = 540;
     if (cfg.headline.type === "none") return;
@@ -192,57 +203,103 @@
     ctx.save();
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     if (cfg.headline.type === "bold") {
-      ctx.font = "700 15px " + BODY; ctx.fillStyle = cfg.headline.c2;
-      trackedText(ctx, "SUA CREDENCIAL", CX, 70, 3);
-      ctx.font = (cfg.headline.weight || "800") + " 54px " + DISPLAY; ctx.fillStyle = cfg.headline.c1;
-      ctx.fillText("MASTERCLASS DE IA", CX, 124);
-      ctx.font = "600 16px " + BODY; ctx.fillStyle = cfg.headline.c2;
-      trackedText(ctx, "21 · 10 · 2026", CX, 164, 2);
+      ctx.font = "700 14px " + BODY;
+      var w1 = trackedWidth(ctx, "SUA CREDENCIAL", 3);
+      ctx.font = (cfg.headline.weight || "800") + " 42px " + DISPLAY;
+      var w2 = ctx.measureText("MASTERCLASS DE IA").width;
+      ctx.font = "600 15px " + BODY;
+      var w3 = trackedWidth(ctx, "21 · 10 · 2026", 2);
+      drawScrim(ctx, CX, 102, Math.max(w1, w2, w3) + 56, 120, 24);
+
+      ctx.font = "700 14px " + BODY; ctx.fillStyle = cfg.headline.c2;
+      trackedText(ctx, "SUA CREDENCIAL", CX, 60, 3);
+      ctx.font = (cfg.headline.weight || "800") + " 42px " + DISPLAY; ctx.fillStyle = cfg.headline.c1;
+      ctx.fillText("MASTERCLASS DE IA", CX, 104);
+      ctx.font = "600 15px " + BODY; ctx.fillStyle = cfg.headline.c2;
+      trackedText(ctx, "21 · 10 · 2026", CX, 138, 2);
     } else if (cfg.headline.type === "serif") {
+      ctx.font = "700 14px " + BODY;
+      var sw1 = trackedWidth(ctx, "CARTÃO DE PARTICIPAÇÃO", 3);
+      ctx.font = (cfg.headline.style || "italic 400") + " 42px " + DISPLAY;
+      var sw2 = ctx.measureText("Primeira Masterclass de IA").width;
+      drawScrim(ctx, CX, 102, Math.max(sw1, sw2) + 64, 92, 24);
+
       ctx.font = "700 14px " + BODY; ctx.fillStyle = cfg.headline.c2;
       trackedText(ctx, "CARTÃO DE PARTICIPAÇÃO", CX, 76, 3);
       ctx.font = (cfg.headline.style || "italic 400") + " 42px " + DISPLAY; ctx.fillStyle = cfg.headline.c1;
       ctx.fillText("Primeira Masterclass de IA", CX, 128);
     } else if (cfg.headline.type === "label") {
-      ctx.font = "700 15px " + BODY; ctx.fillStyle = cfg.headline.c1;
-      trackedText(ctx, "ÍMPAR · MASTERCLASS DE IA · 21.10.2026", CX, 70, 2);
+      ctx.font = "800 26px " + BODY;
+      var lw1 = trackedWidth(ctx, "ÍMPAR", 3);
+      ctx.font = "700 38px " + BODY;
+      var lw2 = ctx.measureText("MASTERCLASS DE IA").width;
+      ctx.font = "600 22px " + BODY;
+      var lw3 = trackedWidth(ctx, "21 · 10 · 2026", 2);
+      drawScrim(ctx, CX, 116, Math.max(lw1, lw2, lw3) + 70, 164, 28);
+
+      ctx.font = "800 26px " + BODY; ctx.fillStyle = cfg.headline.c1;
+      trackedText(ctx, "ÍMPAR", CX, 66, 3);
+      ctx.font = "700 38px " + BODY;
+      ctx.fillText("MASTERCLASS DE IA", CX, 114);
+      ctx.font = "600 22px " + BODY;
+      trackedText(ctx, "21 · 10 · 2026", CX, 162, 2);
     }
     ctx.restore();
   }
 
-  function drawFooter(ctx, cfg) {
+  function drawFooter(ctx, cfg, cardBottomAbs) {
     if (cfg.footer.type === "none") return;
-    var CX = 540, y = 1032;
+    var CX = 540, y = Math.min(cardBottomAbs + 46, 1024);
     ctx.save(); ctx.textAlign = "center"; ctx.textBaseline = "middle";
     if (cfg.footer.type === "inline") {
-      ctx.font = "600 15px " + cfg.fonts.body; ctx.fillStyle = cfg.footer.color;
+      ctx.font = "700 24px " + cfg.fonts.body;
+      var tw = trackedWidth(ctx, MODULES.join("   ·   "), 1);
+      drawScrim(ctx, CX, y, tw + 64, 58, 29);
+
+      ctx.fillStyle = cfg.footer.color;
       trackedText(ctx, MODULES.join("   ·   "), CX, y, 1);
     } else if (cfg.footer.type === "pills") {
+      var pillFont = 22, pad = 34, gap = 10, h = 48;
+      var maxRowW = 900;
+      ctx.font = "700 " + pillFont + "px " + cfg.fonts.body;
       var totalW = 0, widths = [];
       MODULES.forEach(function (m) {
-        ctx.font = "700 13px " + cfg.fonts.body;
-        var w = ctx.measureText(m).width + 28;
-        widths.push(w); totalW += w + 10;
+        var w = ctx.measureText(m).width + pad;
+        widths.push(w); totalW += w + gap;
       });
-      totalW -= 10;
-      var x = CX - totalW / 2, h = 34;
+      totalW -= gap;
+
+      if (totalW > maxRowW) {
+        var scale = maxRowW / totalW;
+        pillFont = Math.round(pillFont * scale);
+        pad *= scale; gap *= scale; h *= scale;
+        ctx.font = "700 " + pillFont + "px " + cfg.fonts.body;
+        totalW = 0; widths = [];
+        MODULES.forEach(function (m) {
+          var w = ctx.measureText(m).width + pad;
+          widths.push(w); totalW += w + gap;
+        });
+        totalW -= gap;
+      }
+
+      var x = CX - totalW / 2;
       MODULES.forEach(function (m, i) {
         var w = widths[i];
         roundRect(ctx, x, y - h / 2, w, h, h / 2);
-        ctx.fillStyle = cfg.footer.pill; ctx.fill();
-        ctx.font = "700 13px " + cfg.fonts.body;
+        ctx.fillStyle = DARK_CHIP; ctx.fill();
+        ctx.font = "700 " + pillFont + "px " + cfg.fonts.body;
         ctx.fillStyle = cfg.footer.color;
         ctx.fillText(m, x + w / 2, y + 1);
-        x += w + 10;
+        x += w + gap;
       });
     }
     ctx.restore();
   }
 
   function shapeDims(shape, scale) {
-    if (shape === "horizontal") return { w: 760 * scale, h: 440 * scale, kind: shape };
-    if (shape === "square") return { w: 520 * scale, h: 520 * scale, kind: shape };
-    return { w: 420 * scale, h: 560 * scale, kind: "badge" };
+    if (shape === "horizontal") return { w: 800 * scale, h: 500 * scale, kind: shape };
+    if (shape === "square") return { w: 700 * scale, h: 700 * scale, kind: shape };
+    return { w: 450 * scale, h: 580 * scale, kind: "badge" };
   }
 
   function drawLanyardLocal(ctx, dims, color) {
@@ -274,19 +331,25 @@
 
     var stripeH = 0;
     if (cfg.stripeHeader) {
-      stripeH = h * 0.16;
+      stripeH = h * 0.14;
       ctx.save();
       roundRectTop(ctx, x0, y0, w, stripeH, 30);
       ctx.fillStyle = cfg.accent; ctx.fill();
       ctx.font = "800 " + Math.round(w * 0.065) + "px " + cfg.fonts.body;
       ctx.fillStyle = "#ffffff"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      trackedText(ctx, "ÍMPAR", 0, y0 + stripeH * 0.52, 2);
+      trackedText(ctx, "ÍMPAR", 0, y0 + stripeH * 0.62, 2);
+      ctx.restore();
+    } else {
+      ctx.save();
+      ctx.font = "800 " + Math.round(w * 0.045) + "px " + cfg.fonts.body;
+      ctx.fillStyle = cfg.accent; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      trackedText(ctx, "ÍMPAR", 0, y0 + h * 0.09, 2);
       ctx.restore();
     }
 
     if (cfg.lanyard) {
       ctx.save();
-      ctx.beginPath(); ctx.arc(0, y0 + 24, 12, 0, Math.PI * 2);
+      ctx.beginPath(); ctx.arc(0, y0 + 15, 10, 0, Math.PI * 2);
       ctx.fillStyle = cfg.cardFill;
       ctx.globalCompositeOperation = "destination-out"; ctx.fill();
       ctx.restore();
@@ -302,64 +365,107 @@
       var photoCx = x0 + w * 0.26, photoCy = 0;
       drawPhoto(ctx, cfg.photoShape, photoCx, photoCy, photoSize, photoImg, initial, cfg.fonts.display);
       var textX = x0 + w * 0.48;
+      var hNameY = photoCy - h * 0.18;
+      var hRoleY = hNameY + h * 0.095;
+      var hEventY = hRoleY + h * 0.095;
+      var hDateY = hEventY + h * 0.09;
+
       ctx.save();
       ctx.textAlign = "left"; ctx.textBaseline = "middle";
-      ctx.font = "700 " + Math.round(h * 0.09) + "px " + cfg.fonts.display; ctx.fillStyle = cfg.ink;
-      ctx.fillText(name || "Seu Nome", textX, photoCy - h * 0.1);
-      ctx.font = "700 " + Math.round(h * 0.032) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
-      trackedTextLeft(ctx, "PARTICIPANTE", textX, photoCy - h * 0.02, 2);
-      ctx.font = "600 " + Math.round(h * 0.036) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.ink;
-      wrapLines(ctx, "Masterclass de Inteligência Artificial", w * 0.42).forEach(function (line, i) {
-        ctx.fillText(line, textX, photoCy + h * 0.08 + i * h * 0.05);
-      });
-      ctx.font = "700 " + Math.round(h * 0.034) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
-      ctx.fillText("21 · 10 · 2026", textX, photoCy + h * 0.22);
-      ctx.restore();
+      ctx.font = "700 " + Math.round(h * 0.08) + "px " + cfg.fonts.display; ctx.fillStyle = cfg.ink;
+      ctx.fillText(name || "Seu Nome", textX, hNameY);
+      ctx.font = "700 " + Math.round(h * 0.038) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
+      trackedTextLeft(ctx, "PARTICIPANTE", textX, hRoleY, 2);
+      ctx.font = "600 " + Math.round(h * 0.044) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.ink;
+      ctx.fillText("Masterclass de IA", textX, hEventY);
+      ctx.font = "700 " + Math.round(h * 0.042) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
+      ctx.fillText("21 · 10 · 2026", textX, hDateY);
 
-      if (cfg.deco === "barcode") barcode(ctx, x0 + w * 0.04, y0 + h - h * 0.1, w * 0.92, h * 0.045, cfg.muted);
-      if (cfg.deco === "qr") qrPattern(ctx, x0 + w - w * 0.16, y0 + h - h * 0.2, h * 0.16, cfg.muted);
+      var modLabelY = hDateY + h * 0.11;
+      ctx.font = "700 " + Math.round(h * 0.03) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
+      trackedTextLeft(ctx, "VOCÊ VAI APRENDER", textX, modLabelY, 2);
+
+      var modFont = Math.round(h * 0.034);
+      ctx.font = "700 " + modFont + "px " + cfg.fonts.body;
+      var maxModW = 0;
+      MODULES.forEach(function (m) { maxModW = Math.max(maxModW, ctx.measureText(m).width); });
+      var modColGap = maxModW + 44;
+      MODULES.forEach(function (m, i) {
+        var col = i % 2, row = Math.floor(i / 2);
+        var mx = textX + col * modColGap;
+        var my = modLabelY + h * 0.09 + row * h * 0.1;
+        ctx.beginPath(); ctx.arc(mx + 6, my, 5, 0, Math.PI * 2); ctx.fillStyle = cfg.accent; ctx.fill();
+        ctx.font = "700 " + modFont + "px " + cfg.fonts.body; ctx.fillStyle = cfg.ink;
+        ctx.fillText(m, mx + 20, my);
+      });
+      ctx.restore();
     } else {
-      var topPad = stripeH + h * 0.1;
-      var pR = w * 0.26;
+      var topPad = stripeH + h * (cfg.stripeHeader ? 0.08 : 0.135);
+      var pR = w * 0.23;
       var pCy = y0 + topPad + pR;
       drawPhoto(ctx, cfg.photoShape, 0, pCy, pR * 2, photoImg, initial, cfg.fonts.display);
 
-      var nameY = pCy + pR + h * 0.1;
+      var bNameY = pCy + pR + h * 0.085;
+      var bRoleY = bNameY + h * 0.065;
+      var bDividerY = bRoleY + h * 0.055;
+      var bEventY = bDividerY + h * 0.065;
+      var bDateY = bEventY + h * 0.075;
+
       ctx.save();
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.font = "700 " + Math.round(w * 0.082) + "px " + cfg.fonts.display; ctx.fillStyle = cfg.ink;
-      ctx.fillText(name || "Seu Nome", 0, nameY);
-      ctx.font = "700 " + Math.round(w * 0.032) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
-      trackedText(ctx, "PARTICIPANTE", 0, nameY + h * 0.07, 3);
+      ctx.font = "700 " + Math.round(w * 0.075) + "px " + cfg.fonts.display; ctx.fillStyle = cfg.ink;
+      ctx.fillText(name || "Seu Nome", 0, bNameY);
+      ctx.font = "700 " + Math.round(w * 0.033) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
+      trackedText(ctx, "PARTICIPANTE", 0, bRoleY, 3);
 
       ctx.strokeStyle = "rgba(95,21,85,0.14)"; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(x0 + w * 0.12, nameY + h * 0.12); ctx.lineTo(x0 + w - w * 0.12, nameY + h * 0.12); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x0 + w * 0.12, bDividerY); ctx.lineTo(x0 + w - w * 0.12, bDividerY); ctx.stroke();
 
-      ctx.font = "600 " + Math.round(w * 0.04) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.ink;
-      wrapLines(ctx, "MASTERCLASS DE INTELIGÊNCIA ARTIFICIAL", w - w * 0.24).forEach(function (line, i) {
-        ctx.fillText(line, 0, nameY + h * 0.2 + i * h * 0.045);
-      });
-      ctx.font = "700 " + Math.round(w * 0.038) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
-      trackedText(ctx, "21 · 10 · 2026", 0, nameY + h * 0.32, 2);
+      ctx.font = "600 " + Math.round(w * 0.037) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.ink;
+      ctx.fillText("MASTERCLASS DE IA", 0, bEventY);
+      ctx.font = "700 " + Math.round(w * 0.034) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
+      trackedText(ctx, "21 · 10 · 2026", 0, bDateY, 2);
       ctx.restore();
-
-      if (cfg.deco === "barcode") barcode(ctx, x0 + w * 0.1, y0 + h - h * 0.08, w * 0.8, h * 0.035, cfg.muted);
-      if (cfg.deco === "qr") qrPattern(ctx, 0 - h * 0.08, y0 + h - h * 0.16, h * 0.13, cfg.muted);
     }
   }
 
   function renderTemplate(ctx, cfg, name, photoImg) {
     ctx.clearRect(0, 0, 1080, 1080);
     drawBG(ctx, cfg.bg);
-    drawHeadline(ctx, cfg);
     var dims = shapeDims(cfg.shape, cfg.scale);
+    var centerY = 560;
+    var shiftY = 0;
+
+    if (dims.kind === "horizontal") {
+      var tiltRad0 = ((cfg.tilt || 0) * Math.PI) / 180;
+      var extent0 = (dims.w / 2) * Math.abs(Math.sin(tiltRad0)) + (dims.h / 2) * Math.abs(Math.cos(tiltRad0));
+      var headlineBottom =
+        cfg.headline.type === "label" ? 198 :
+        cfg.headline.type === "serif" ? 148 :
+        cfg.headline.type === "none" ? 40 : 162;
+      var rawCenterY = headlineBottom + 45 + extent0;
+      var contentTop = 40;
+      var contentBottom = rawCenterY + extent0;
+      shiftY = 540 - (contentTop + contentBottom) / 2;
+      centerY = rawCenterY + shiftY;
+    }
+
     ctx.save();
-    ctx.translate(540, 560);
+    if (shiftY) ctx.translate(0, shiftY);
+    drawHeadline(ctx, cfg);
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(540, centerY);
     if (cfg.tilt) ctx.rotate((cfg.tilt * Math.PI) / 180);
     if (cfg.lanyard) drawLanyardLocal(ctx, dims, cfg.accent);
     drawCardLocal(ctx, dims, cfg, name, photoImg);
     ctx.restore();
-    drawFooter(ctx, cfg);
+    if (dims.kind !== "horizontal") {
+      var tiltRad = ((cfg.tilt || 0) * Math.PI) / 180;
+      var bottomExtent = (dims.w / 2) * Math.abs(Math.sin(tiltRad)) + (dims.h / 2) * Math.abs(Math.cos(tiltRad));
+      drawFooter(ctx, cfg, centerY + bottomExtent);
+    }
   }
 
   // ---------- wiring ----------
@@ -381,30 +487,99 @@
   }
 
   function buildPicker() {
+    var current = TEMPLATES[state.templateIndex];
+
+    var wrapper = document.createElement("div");
+    wrapper.className = "tpl-dropdown";
+
+    var toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "tpl-toggle";
+    toggle.setAttribute("aria-haspopup", "listbox");
+    toggle.setAttribute("aria-expanded", "false");
+
+    var toggleThumb = document.createElement("canvas");
+    toggleThumb.width = 1080;
+    toggleThumb.height = 1080;
+    toggleThumb.className = "tpl-thumb";
+
+    var toggleLabel = document.createElement("span");
+    toggleLabel.className = "tpl-label";
+    toggleLabel.textContent = current.label;
+
+    var arrow = document.createElement("span");
+    arrow.className = "tpl-arrow";
+    arrow.setAttribute("aria-hidden", "true");
+    arrow.textContent = "▾";
+
+    toggle.appendChild(toggleThumb);
+    toggle.appendChild(toggleLabel);
+    toggle.appendChild(arrow);
+
+    var list = document.createElement("ul");
+    list.className = "tpl-list";
+    list.setAttribute("role", "listbox");
+    list.hidden = true;
+
+    function closeList() {
+      list.hidden = true;
+      toggle.setAttribute("aria-expanded", "false");
+    }
+    function openList() {
+      list.hidden = false;
+      toggle.setAttribute("aria-expanded", "true");
+    }
+
+    toggle.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (list.hidden) openList(); else closeList();
+    });
+    document.addEventListener("click", function (e) {
+      if (!wrapper.contains(e.target)) closeList();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeList();
+    });
+
     TEMPLATES.forEach(function (tpl, i) {
-      var btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "template-option" + (i === state.templateIndex ? " selected" : "");
+      var item = document.createElement("li");
+      item.className = "tpl-option" + (i === state.templateIndex ? " selected" : "");
+      item.setAttribute("role", "option");
+      item.setAttribute("tabindex", "0");
 
       var thumb = document.createElement("canvas");
       thumb.width = 1080;
       thumb.height = 1080;
-      btn.appendChild(thumb);
+      item.appendChild(thumb);
 
-      var span = document.createElement("span");
-      span.textContent = tpl.label;
-      btn.appendChild(span);
+      var label = document.createElement("span");
+      label.textContent = tpl.label;
+      item.appendChild(label);
 
-      btn.addEventListener("click", function () {
+      function select() {
         state.templateIndex = i;
-        Array.prototype.forEach.call(templatePicker.children, function (el) { el.classList.remove("selected"); });
-        btn.classList.add("selected");
+        Array.prototype.forEach.call(list.children, function (el) { el.classList.remove("selected"); });
+        item.classList.add("selected");
+        toggleLabel.textContent = tpl.label;
+        renderTemplate(toggleThumb.getContext("2d"), tpl.cfg, "", null);
+        closeList();
         render();
+      }
+
+      item.addEventListener("click", select);
+      item.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(); }
       });
 
-      templatePicker.appendChild(btn);
+      list.appendChild(item);
       renderTemplate(thumb.getContext("2d"), tpl.cfg, "", null);
     });
+
+    wrapper.appendChild(toggle);
+    wrapper.appendChild(list);
+    templatePicker.appendChild(wrapper);
+
+    renderTemplate(toggleThumb.getContext("2d"), current.cfg, "", null);
   }
 
   function downloadPNG() {
