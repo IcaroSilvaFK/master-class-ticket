@@ -8,9 +8,9 @@
   var MODULES = ["CLAUDE CODE", "SPEC DRIVEN DEV", "COPILOT STUDIO", "POWER BI"];
 
   var CAPTION =
-    "🥋 Ticket na mão. Próxima parada: o dojô da IA!\n\n" +
-    "No dia 21 de outubro, vou participar da Primeira Masterclass de Inteligência Artificial da Ímpar. Uma oportunidade para aprender, experimentar e descobrir novas formas de aplicar IA no dia a dia.\n\n" +
-    "Nosso treino passa por Claude Code, Spec Driven Development, agentes no Copilot Studio e um case de dashboard no Power BI. 🚀\n\n" +
+    "🥋 Ticket carimbado: participei do dojô da IA!\n\n" +
+    "Participei da Primeira Masterclass de Inteligência Artificial da Ímpar, em 21 de outubro. Foi uma baita oportunidade pra aprender, experimentar e descobrir novas formas de aplicar IA no dia a dia.\n\n" +
+    "Treinamos Claude Code, Spec Driven Development, agentes no Copilot Studio e um case de dashboard no Power BI. 🚀\n\n" +
     "A jornada até a faixa-preta começa com prática, curiosidade e troca de conhecimento. Bora treinar juntos?\n\n" +
     "#Ímpar #InteligênciaArtificial #MasterclassIA #AprendizadoContínuo";
 
@@ -204,7 +204,7 @@
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     if (cfg.headline.type === "bold") {
       ctx.font = "700 14px " + BODY;
-      var w1 = trackedWidth(ctx, "SUA CREDENCIAL", 3);
+      var w1 = trackedWidth(ctx, "EU PARTICIPEI DA", 3);
       ctx.font = (cfg.headline.weight || "800") + " 42px " + DISPLAY;
       var w2 = ctx.measureText("MASTERCLASS DE IA").width;
       ctx.font = "600 15px " + BODY;
@@ -212,7 +212,7 @@
       drawScrim(ctx, CX, 102, Math.max(w1, w2, w3) + 56, 120, 24);
 
       ctx.font = "700 14px " + BODY; ctx.fillStyle = cfg.headline.c2;
-      trackedText(ctx, "SUA CREDENCIAL", CX, 60, 3);
+      trackedText(ctx, "EU PARTICIPEI DA", CX, 60, 3);
       ctx.font = (cfg.headline.weight || "800") + " 42px " + DISPLAY; ctx.fillStyle = cfg.headline.c1;
       ctx.fillText("MASTERCLASS DE IA", CX, 104);
       ctx.font = "600 15px " + BODY; ctx.fillStyle = cfg.headline.c2;
@@ -375,7 +375,7 @@
       ctx.font = "700 " + Math.round(h * 0.08) + "px " + cfg.fonts.display; ctx.fillStyle = cfg.ink;
       ctx.fillText(name || "Seu Nome", textX, hNameY);
       ctx.font = "700 " + Math.round(h * 0.038) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
-      trackedTextLeft(ctx, "PARTICIPANTE", textX, hRoleY, 2);
+      trackedTextLeft(ctx, "PARTICIPEI", textX, hRoleY, 2);
       ctx.font = "600 " + Math.round(h * 0.044) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.ink;
       ctx.fillText("Masterclass de IA", textX, hEventY);
       ctx.font = "700 " + Math.round(h * 0.042) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
@@ -416,7 +416,7 @@
       ctx.font = "700 " + Math.round(w * 0.075) + "px " + cfg.fonts.display; ctx.fillStyle = cfg.ink;
       ctx.fillText(name || "Seu Nome", 0, bNameY);
       ctx.font = "700 " + Math.round(w * 0.033) + "px " + cfg.fonts.body; ctx.fillStyle = cfg.accent;
-      trackedText(ctx, "PARTICIPANTE", 0, bRoleY, 3);
+      trackedText(ctx, "PARTICIPEI", 0, bRoleY, 3);
 
       ctx.strokeStyle = "rgba(95,21,85,0.14)"; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(x0 + w * 0.12, bDividerY); ctx.lineTo(x0 + w - w * 0.12, bDividerY); ctx.stroke();
